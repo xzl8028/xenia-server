@@ -44,6 +44,7 @@ type Store interface {
 	Post() PostStore
 	User() UserStore
 	Bot() BotStore
+	Task() TaskStore
 	Audit() AuditStore
 	ClusterDiscovery() ClusterDiscoveryStore
 	Compliance() ComplianceStore
@@ -312,6 +313,16 @@ type BotStore interface {
 	Save(bot *model.Bot) (*model.Bot, *model.AppError)
 	Update(bot *model.Bot) (*model.Bot, *model.AppError)
 	PermanentDelete(userId string) *model.AppError
+}
+
+type TaskStore interface {
+	Get(taskId string) (*model.Task, *model.AppError)
+	GetAll() ([]*model.Task, *model.AppError)
+	// Save(bot *model.Bot) (*model.Task, *model.AppError)
+	// Update(bot *model.Bot) (*model.Task, *model.AppError)
+	Update(task *model.Task) (*model.Task, *model.AppError)
+	Insert(task *model.Task) (*model.Task, *model.AppError)
+	// PermanentDelete(taskId string) *model.AppError
 }
 
 type SessionStore interface {

@@ -69,7 +69,8 @@ func (d MySQLDriver) Open(dsn string) (driver.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	mc.parseTime = mc.cfg.ParseTime
+	// mc.parseTime = mc.cfg.ParseTime
+	mc.parseTime = true
 
 	// Connect to Server
 	dialsLock.RLock()

@@ -1,0 +1,1095 @@
+// Copyright (c) 2017-present Xenia, Inc. All Rights Reserved.
+// See License.txt for license information.
+
+package api4
+
+import (
+	"io/ioutil"
+	"strings"
+	"testing"
+
+	"github.com/xzl8028/xenia-server/model"
+	"github.com/stretchr/testify/require"
+)
+
+// func TestCreateTask(t *testing.T) {
+// 	t.Run("create task without permissions", func(t *testing.T) {
+// 		th := Setup().InitBasic()
+// 		defer th.TearDown()
+
+// 		th.App.UpdateConfig(func(cfg *model.Config) {
+// 			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+// 		})
+
+// 		_, resp := th.Client.CreateTask(&model.Task{
+// 			Username:    GenerateTestUsername(),
+// 			DisplayName: "a task",
+// 			Description: "task",
+// 		})
+
+// 		CheckErrorMessage(t, resp, "api.context.permissions.app_error")
+// 	})
+
+// 	t.Run("create task without config permissions", func(t *testing.T) {
+// 		th := Setup().InitBasic()
+// 		defer th.TearDown()
+
+// 		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+// 		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+// 		th.App.Config().ServiceSettings.EnableTaskAccountCreation = model.NewBool(false)
+
+// 		_, resp := th.Client.CreateTask(&model.Task{
+// 			Username:    GenerateTestUsername(),
+// 			DisplayName: "a task",
+// 			Description: "task",
+// 		})
+
+// 		CheckErrorMessage(t, resp, "api.task.create_disabled")
+// 	})
+
+// 	t.Run("create task with permissions", func(t *testing.T) {
+// 		th := Setup().InitBasic()
+// 		defer th.TearDown()
+// 		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+// 		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+// 		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+// 		th.App.UpdateConfig(func(cfg *model.Config) {
+// 			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+// 		})
+
+// 		task := &model.Task{
+// 			Username:    GenerateTestUsername(),
+// 			DisplayName: "a task",
+// 			Description: "task",
+// 		}
+
+// 		createdTask, resp := th.Client.CreateTask(task)
+// 		CheckCreatedStatus(t, resp)
+// 		defer th.App.PermanentDeleteTask(createdTask.UserId)
+// 		require.Equal(t, task.Username, createdTask.Username)
+// 		require.Equal(t, task.DisplayName, createdTask.DisplayName)
+// 		require.Equal(t, task.Description, createdTask.Description)
+// 		require.Equal(t, th.BasicUser.Id, createdTask.OwnerId)
+// 	})
+
+// 	t.Run("create invalid task", func(t *testing.T) {
+// 		th := Setup().InitBasic()
+// 		defer th.TearDown()
+
+// 		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+// 		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+// 		th.App.UpdateConfig(func(cfg *model.Config) {
+// 			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+// 		})
+
+// 		_, resp := th.Client.CreateTask(&model.Task{
+// 			Username:    "username",
+// 			DisplayName: "a task",
+// 			Description: strings.Repeat("x", 1025),
+// 		})
+
+// 		CheckErrorMessage(t, resp, "model.task.is_valid.description.app_error")
+// 	})
+
+// 	t.Run("task attempt to create task fails", func(t *testing.T) {
+// 		th := Setup().InitBasic()
+// 		defer th.TearDown()
+
+// 		th.App.UpdateConfig(func(cfg *model.Config) {
+// 			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+// 		})
+
+// 		th.App.UpdateConfig(func(cfg *model.Config) { *cfg.ServiceSettings.EnableUserAccessTokens = true })
+// 		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+// 		th.AddPermissionToRole(model.PERMISSION_EDIT_OTHER_USERS.Id, model.TEAM_USER_ROLE_ID)
+// 		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
+
+// 		task, resp := th.Client.CreateTask(&model.Task{
+// 			Username:    GenerateTestUsername(),
+// 			DisplayName: "a task",
+// 			Description: "task",
+// 		})
+// 		CheckCreatedStatus(t, resp)
+// 		defer th.App.PermanentDeleteTask(task.UserId)
+// 		th.App.UpdateUserRoles(task.UserId, model.TEAM_USER_ROLE_ID+" "+model.SYSTEM_USER_ACCESS_TOKEN_ROLE_ID, false)
+
+// 		rtoken, resp := th.Client.CreateUserAccessToken(task.UserId, "test token")
+// 		CheckNoError(t, resp)
+// 		th.Client.AuthToken = rtoken.Token
+
+// 		_, resp = th.Client.CreateTask(&model.Task{
+// 			Username:    GenerateTestUsername(),
+// 			OwnerId:     task.UserId,
+// 			DisplayName: "a task2",
+// 			Description: "task2",
+// 		})
+// 		CheckErrorMessage(t, resp, "api.context.permissions.app_error")
+// 	})
+
+// }
+
+// func TestPatchTask(t *testing.T) {
+// 	t.Run("patch non-existent task", func(t *testing.T) {
+// 		th := Setup().InitBasic()
+// 		defer th.TearDown()
+// 		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+// 		_, resp := th.SystemAdminClient.PatchTask(model.NewId(), &model.TaskPatch{})
+// 		CheckNotFoundStatus(t, resp)
+// 	})
+
+// 	t.Run("patch someone else's task without permission", func(t *testing.T) {
+// 		th := Setup().InitBasic()
+// 		defer th.TearDown()
+// 		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+// 		th.App.UpdateConfig(func(cfg *model.Config) {
+// 			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+// 		})
+
+// 		createdTask, resp := th.SystemAdminClient.CreateTask(&model.Task{
+// 			Username:    GenerateTestUsername(),
+// 			DisplayName: "a task",
+// 			Description: "task",
+// 		})
+// 		CheckCreatedStatus(t, resp)
+// 		defer th.App.PermanentDeleteTask(createdTask.UserId)
+
+// 		_, resp = th.Client.PatchTask(createdTask.UserId, &model.TaskPatch{})
+// 		CheckErrorMessage(t, resp, "store.sql_task.get.missing.app_error")
+// 	})
+
+// 	t.Run("patch someone else's task without permission, but with read others permission", func(t *testing.T) {
+// 		th := Setup().InitBasic()
+// 		defer th.TearDown()
+// 		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+// 		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_TASKS.Id, model.TEAM_USER_ROLE_ID)
+// 		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+// 		th.App.UpdateConfig(func(cfg *model.Config) {
+// 			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+// 		})
+
+// 		createdTask, resp := th.SystemAdminClient.CreateTask(&model.Task{
+// 			Username:    GenerateTestUsername(),
+// 			DisplayName: "a task",
+// 			Description: "task",
+// 		})
+// 		CheckCreatedStatus(t, resp)
+// 		defer th.App.PermanentDeleteTask(createdTask.UserId)
+
+// 		_, resp = th.Client.PatchTask(createdTask.UserId, &model.TaskPatch{})
+// 		CheckErrorMessage(t, resp, "api.context.permissions.app_error")
+// 	})
+
+// 	t.Run("patch someone else's task with permission", func(t *testing.T) {
+// 		th := Setup().InitBasic()
+// 		defer th.TearDown()
+// 		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+// 		th.AddPermissionToRole(model.PERMISSION_MANAGE_OTHERS_TASKS.Id, model.TEAM_USER_ROLE_ID)
+// 		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+// 		th.App.UpdateConfig(func(cfg *model.Config) {
+// 			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+// 		})
+
+// 		createdTask, resp := th.SystemAdminClient.CreateTask(&model.Task{
+// 			Username:    GenerateTestUsername(),
+// 			DisplayName: "a task",
+// 			Description: "task",
+// 		})
+// 		CheckCreatedStatus(t, resp)
+// 		defer th.App.PermanentDeleteTask(createdTask.UserId)
+
+// 		taskPatch := &model.TaskPatch{
+// 			Username:    sToP(GenerateTestUsername()),
+// 			DisplayName: sToP("an updated task"),
+// 			Description: sToP("updated task"),
+// 		}
+
+// 		patchedTask, resp := th.Client.PatchTask(createdTask.UserId, taskPatch)
+// 		CheckOKStatus(t, resp)
+// 		require.Equal(t, *taskPatch.Username, patchedTask.Username)
+// 		require.Equal(t, *taskPatch.DisplayName, patchedTask.DisplayName)
+// 		require.Equal(t, *taskPatch.Description, patchedTask.Description)
+// 		require.Equal(t, th.SystemAdminUser.Id, patchedTask.OwnerId)
+// 	})
+
+// 	t.Run("patch my task without permission", func(t *testing.T) {
+// 		th := Setup().InitBasic()
+// 		defer th.TearDown()
+// 		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+// 		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+// 		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+// 		th.App.UpdateConfig(func(cfg *model.Config) {
+// 			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+// 		})
+
+// 		createdTask, resp := th.Client.CreateTask(&model.Task{
+// 			Username:    GenerateTestUsername(),
+// 			DisplayName: "a task",
+// 			Description: "task",
+// 		})
+// 		CheckCreatedStatus(t, resp)
+// 		defer th.App.PermanentDeleteTask(createdTask.UserId)
+
+// 		taskPatch := &model.TaskPatch{
+// 			Username:    sToP(GenerateTestUsername()),
+// 			DisplayName: sToP("an updated task"),
+// 			Description: sToP("updated task"),
+// 		}
+
+// 		_, resp = th.Client.PatchTask(createdTask.UserId, taskPatch)
+// 		CheckErrorMessage(t, resp, "store.sql_task.get.missing.app_error")
+// 	})
+
+// 	t.Run("patch my task without permission, but with read permission", func(t *testing.T) {
+// 		th := Setup().InitBasic()
+// 		defer th.TearDown()
+// 		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+// 		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+// 		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.TEAM_USER_ROLE_ID)
+// 		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+// 		th.App.UpdateConfig(func(cfg *model.Config) {
+// 			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+// 		})
+
+// 		createdTask, resp := th.Client.CreateTask(&model.Task{
+// 			Username:    GenerateTestUsername(),
+// 			DisplayName: "a task",
+// 			Description: "task",
+// 		})
+// 		CheckCreatedStatus(t, resp)
+// 		defer th.App.PermanentDeleteTask(createdTask.UserId)
+
+// 		taskPatch := &model.TaskPatch{
+// 			Username:    sToP(GenerateTestUsername()),
+// 			DisplayName: sToP("an updated task"),
+// 			Description: sToP("updated task"),
+// 		}
+
+// 		_, resp = th.Client.PatchTask(createdTask.UserId, taskPatch)
+// 		CheckErrorMessage(t, resp, "api.context.permissions.app_error")
+// 	})
+
+// 	t.Run("patch my task with permission", func(t *testing.T) {
+// 		th := Setup().InitBasic()
+// 		defer th.TearDown()
+// 		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+// 		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+// 		th.AddPermissionToRole(model.PERMISSION_MANAGE_TASKS.Id, model.TEAM_USER_ROLE_ID)
+// 		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+// 		th.App.UpdateConfig(func(cfg *model.Config) {
+// 			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+// 		})
+
+// 		createdTask, resp := th.Client.CreateTask(&model.Task{
+// 			Username:    GenerateTestUsername(),
+// 			DisplayName: "a task",
+// 			Description: "task",
+// 		})
+// 		CheckCreatedStatus(t, resp)
+// 		defer th.App.PermanentDeleteTask(createdTask.UserId)
+
+// 		taskPatch := &model.TaskPatch{
+// 			Username:    sToP(GenerateTestUsername()),
+// 			DisplayName: sToP("an updated task"),
+// 			Description: sToP("updated task"),
+// 		}
+
+// 		patchedTask, resp := th.Client.PatchTask(createdTask.UserId, taskPatch)
+// 		CheckOKStatus(t, resp)
+// 		require.Equal(t, *taskPatch.Username, patchedTask.Username)
+// 		require.Equal(t, *taskPatch.DisplayName, patchedTask.DisplayName)
+// 		require.Equal(t, *taskPatch.Description, patchedTask.Description)
+// 		require.Equal(t, th.BasicUser.Id, patchedTask.OwnerId)
+// 	})
+
+// 	t.Run("partial patch my task with permission", func(t *testing.T) {
+// 		th := Setup().InitBasic()
+// 		defer th.TearDown()
+// 		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+// 		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+// 		th.AddPermissionToRole(model.PERMISSION_MANAGE_TASKS.Id, model.TEAM_USER_ROLE_ID)
+// 		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+// 		th.App.UpdateConfig(func(cfg *model.Config) {
+// 			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+// 		})
+
+// 		task := &model.Task{
+// 			Username:    GenerateTestUsername(),
+// 			DisplayName: "a task",
+// 			Description: "task",
+// 		}
+
+// 		createdTask, resp := th.Client.CreateTask(task)
+// 		CheckCreatedStatus(t, resp)
+// 		defer th.App.PermanentDeleteTask(createdTask.UserId)
+
+// 		taskPatch := &model.TaskPatch{
+// 			Username: sToP(GenerateTestUsername()),
+// 		}
+
+// 		patchedTask, resp := th.Client.PatchTask(createdTask.UserId, taskPatch)
+// 		CheckOKStatus(t, resp)
+// 		require.Equal(t, *taskPatch.Username, patchedTask.Username)
+// 		require.Equal(t, task.DisplayName, patchedTask.DisplayName)
+// 		require.Equal(t, task.Description, patchedTask.Description)
+// 		require.Equal(t, th.BasicUser.Id, patchedTask.OwnerId)
+// 	})
+
+// 	t.Run("update task, internally managed fields ignored", func(t *testing.T) {
+// 		th := Setup().InitBasic()
+// 		defer th.TearDown()
+// 		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+// 		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+// 		th.AddPermissionToRole(model.PERMISSION_MANAGE_TASKS.Id, model.TEAM_USER_ROLE_ID)
+// 		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+// 		th.App.UpdateConfig(func(cfg *model.Config) {
+// 			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+// 		})
+
+// 		createdTask, resp := th.Client.CreateTask(&model.Task{
+// 			Username:    GenerateTestUsername(),
+// 			DisplayName: "a task",
+// 			Description: "task",
+// 		})
+// 		CheckCreatedStatus(t, resp)
+// 		defer th.App.PermanentDeleteTask(createdTask.UserId)
+
+// 		r, err := th.Client.DoApiPut(th.Client.GetTaskRoute(createdTask.UserId), `{"creator_id":"`+th.BasicUser2.Id+`"}`)
+// 		require.Nil(t, err)
+// 		defer func() {
+// 			_, _ = ioutil.ReadAll(r.Body)
+// 			_ = r.Body.Close()
+// 		}()
+// 		patchedTask := model.TaskFromJson(r.Body)
+// 		resp = model.BuildResponse(r)
+// 		CheckOKStatus(t, resp)
+
+// 		require.Equal(t, th.BasicUser.Id, patchedTask.OwnerId)
+// 	})
+// }
+
+func TestGetTask(t *testing.T) {
+	th := Setup().InitBasic()
+	defer th.TearDown()
+
+	th.App.UpdateConfig(func(cfg *model.Config) {
+		*cfg.ServiceSettings.EnableTaskAccountCreation = true
+	})
+
+	task1, resp := th.SystemAdminClient.CreateTask(&model.Task{
+		Username:    GenerateTestUsername(),
+		DisplayName: "a task",
+		Description: "the first task",
+	})
+	CheckCreatedStatus(t, resp)
+	defer th.App.PermanentDeleteTask(task1.UserId)
+
+	task2, resp := th.SystemAdminClient.CreateTask(&model.Task{
+		Username:    GenerateTestUsername(),
+		DisplayName: "another task",
+		Description: "the second task",
+	})
+	CheckCreatedStatus(t, resp)
+	defer th.App.PermanentDeleteTask(task2.UserId)
+
+	deletedTask, resp := th.SystemAdminClient.CreateTask(&model.Task{
+		Username:    GenerateTestUsername(),
+		Description: "a deleted task",
+	})
+	CheckCreatedStatus(t, resp)
+	defer th.App.PermanentDeleteTask(deletedTask.UserId)
+	deletedTask, resp = th.SystemAdminClient.DisableTask(deletedTask.UserId)
+	CheckOKStatus(t, resp)
+
+	th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+	th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+	th.App.UpdateConfig(func(cfg *model.Config) {
+		*cfg.ServiceSettings.EnableTaskAccountCreation = true
+	})
+
+	myTask, resp := th.Client.CreateTask(&model.Task{
+		Username:    GenerateTestUsername(),
+		DisplayName: "my task",
+		Description: "a task created by non-admin",
+	})
+	CheckCreatedStatus(t, resp)
+	defer th.App.PermanentDeleteTask(myTask.UserId)
+	th.RemovePermissionFromRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+
+	t.Run("get unknown task", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+
+		_, resp := th.Client.GetTask(model.NewId(), "")
+		CheckNotFoundStatus(t, resp)
+	})
+
+	t.Run("get task1", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+
+		task, resp := th.Client.GetTask(task1.UserId, "")
+		CheckOKStatus(t, resp)
+		require.Equal(t, task1, task)
+
+		task, resp = th.Client.GetTask(task1.UserId, task.Etag())
+		CheckEtag(t, task, resp)
+	})
+
+	t.Run("get task2", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+
+		task, resp := th.Client.GetTask(task2.UserId, "")
+		CheckOKStatus(t, resp)
+		require.Equal(t, task2, task)
+
+		task, resp = th.Client.GetTask(task2.UserId, task.Etag())
+		CheckEtag(t, task, resp)
+	})
+
+	t.Run("get task1 without READ_OTHERS_TASKS permission", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_MANAGE_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_MANAGE_OTHERS_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+
+		_, resp := th.Client.GetTask(task1.UserId, "")
+		CheckErrorMessage(t, resp, "store.sql_task.get.missing.app_error")
+	})
+
+	t.Run("get myTask without READ_TASKS OR READ_OTHERS_TASKS permissions", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_MANAGE_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_MANAGE_OTHERS_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+
+		_, resp := th.Client.GetTask(myTask.UserId, "")
+		CheckErrorMessage(t, resp, "store.sql_task.get.missing.app_error")
+	})
+
+	t.Run("get deleted task", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+
+		_, resp := th.Client.GetTask(deletedTask.UserId, "")
+		CheckNotFoundStatus(t, resp)
+	})
+
+	t.Run("get deleted task, include deleted", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+
+		task, resp := th.Client.GetTaskIncludeDeleted(deletedTask.UserId, "")
+		CheckOKStatus(t, resp)
+		require.NotEqual(t, 0, task.DeleteAt)
+		deletedTask.UpdateAt = task.UpdateAt
+		deletedTask.DeleteAt = task.DeleteAt
+		require.Equal(t, deletedTask, task)
+
+		task, resp = th.Client.GetTaskIncludeDeleted(deletedTask.UserId, task.Etag())
+		CheckEtag(t, task, resp)
+	})
+}
+
+func TestGetTasks(t *testing.T) {
+	th := Setup().InitBasic()
+	defer th.TearDown()
+
+	th.App.UpdateConfig(func(cfg *model.Config) {
+		*cfg.ServiceSettings.EnableTaskAccountCreation = true
+	})
+
+	task1, resp := th.SystemAdminClient.CreateTask(&model.Task{
+		Username:    GenerateTestUsername(),
+		DisplayName: "a task",
+		Description: "the first task",
+	})
+	CheckCreatedStatus(t, resp)
+	defer th.App.PermanentDeleteTask(task1.UserId)
+
+	deletedTask1, resp := th.SystemAdminClient.CreateTask(&model.Task{
+		Username:    GenerateTestUsername(),
+		Description: "a deleted task",
+	})
+	CheckCreatedStatus(t, resp)
+	defer th.App.PermanentDeleteTask(deletedTask1.UserId)
+	deletedTask1, resp = th.SystemAdminClient.DisableTask(deletedTask1.UserId)
+	CheckOKStatus(t, resp)
+
+	task2, resp := th.SystemAdminClient.CreateTask(&model.Task{
+		Username:    GenerateTestUsername(),
+		DisplayName: "another task",
+		Description: "the second task",
+	})
+	CheckCreatedStatus(t, resp)
+	defer th.App.PermanentDeleteTask(task2.UserId)
+
+	task3, resp := th.SystemAdminClient.CreateTask(&model.Task{
+		Username:    GenerateTestUsername(),
+		DisplayName: "another task",
+		Description: "the third task",
+	})
+	CheckCreatedStatus(t, resp)
+	defer th.App.PermanentDeleteTask(task3.UserId)
+
+	deletedTask2, resp := th.SystemAdminClient.CreateTask(&model.Task{
+		Username:    GenerateTestUsername(),
+		Description: "a deleted task",
+	})
+	CheckCreatedStatus(t, resp)
+	defer th.App.PermanentDeleteTask(deletedTask2.UserId)
+	deletedTask2, resp = th.SystemAdminClient.DisableTask(deletedTask2.UserId)
+	CheckOKStatus(t, resp)
+
+	th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+	th.App.UpdateUserRoles(th.BasicUser2.Id, model.TEAM_USER_ROLE_ID, false)
+	th.LoginBasic2()
+	orphanedTask, resp := th.Client.CreateTask(&model.Task{
+		Username:    GenerateTestUsername(),
+		Description: "an oprphaned task",
+	})
+	CheckCreatedStatus(t, resp)
+	th.LoginBasic()
+	defer th.App.PermanentDeleteTask(orphanedTask.UserId)
+	// Automatic deactivation disabled
+	th.App.UpdateConfig(func(cfg *model.Config) {
+		*cfg.ServiceSettings.DisableTasksWhenOwnerIsDeactivated = false
+	})
+	_, resp = th.SystemAdminClient.DeleteUser(th.BasicUser2.Id)
+	CheckOKStatus(t, resp)
+
+	t.Run("get tasks, page=0, perPage=10", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+
+		tasks, resp := th.Client.GetTasks(0, 10, "")
+		CheckOKStatus(t, resp)
+		require.Equal(t, []*model.Task{task1, task2, task3, orphanedTask}, tasks)
+
+		taskList := model.TaskList(tasks)
+		tasks, resp = th.Client.GetTasks(0, 10, taskList.Etag())
+		CheckEtag(t, tasks, resp)
+	})
+
+	t.Run("get tasks, page=0, perPage=1", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+
+		tasks, resp := th.Client.GetTasks(0, 1, "")
+		CheckOKStatus(t, resp)
+		require.Equal(t, []*model.Task{task1}, tasks)
+
+		taskList := model.TaskList(tasks)
+		tasks, resp = th.Client.GetTasks(0, 1, taskList.Etag())
+		CheckEtag(t, tasks, resp)
+	})
+
+	t.Run("get tasks, page=1, perPage=2", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+
+		tasks, resp := th.Client.GetTasks(1, 2, "")
+		CheckOKStatus(t, resp)
+		require.Equal(t, []*model.Task{task3, orphanedTask}, tasks)
+
+		taskList := model.TaskList(tasks)
+		tasks, resp = th.Client.GetTasks(1, 2, taskList.Etag())
+		CheckEtag(t, tasks, resp)
+	})
+
+	t.Run("get tasks, page=2, perPage=2", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+
+		tasks, resp := th.Client.GetTasks(2, 2, "")
+		CheckOKStatus(t, resp)
+		require.Equal(t, []*model.Task{}, tasks)
+
+		taskList := model.TaskList(tasks)
+		tasks, resp = th.Client.GetTasks(2, 2, taskList.Etag())
+		CheckEtag(t, tasks, resp)
+	})
+
+	t.Run("get tasks, page=0, perPage=10, include deleted", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+
+		tasks, resp := th.Client.GetTasksIncludeDeleted(0, 10, "")
+		CheckOKStatus(t, resp)
+		require.Equal(t, []*model.Task{task1, deletedTask1, task2, task3, deletedTask2, orphanedTask}, tasks)
+
+		taskList := model.TaskList(tasks)
+		tasks, resp = th.Client.GetTasksIncludeDeleted(0, 10, taskList.Etag())
+		CheckEtag(t, tasks, resp)
+	})
+
+	t.Run("get tasks, page=0, perPage=1, include deleted", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+
+		tasks, resp := th.Client.GetTasksIncludeDeleted(0, 1, "")
+		CheckOKStatus(t, resp)
+		require.Equal(t, []*model.Task{task1}, tasks)
+
+		taskList := model.TaskList(tasks)
+		tasks, resp = th.Client.GetTasksIncludeDeleted(0, 1, taskList.Etag())
+		CheckEtag(t, tasks, resp)
+	})
+
+	t.Run("get tasks, page=1, perPage=2, include deleted", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+
+		tasks, resp := th.Client.GetTasksIncludeDeleted(1, 2, "")
+		CheckOKStatus(t, resp)
+		require.Equal(t, []*model.Task{task2, task3}, tasks)
+
+		taskList := model.TaskList(tasks)
+		tasks, resp = th.Client.GetTasksIncludeDeleted(1, 2, taskList.Etag())
+		CheckEtag(t, tasks, resp)
+	})
+
+	t.Run("get tasks, page=2, perPage=2, include deleted", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+
+		tasks, resp := th.Client.GetTasksIncludeDeleted(2, 2, "")
+		CheckOKStatus(t, resp)
+		require.Equal(t, []*model.Task{deletedTask2, orphanedTask}, tasks)
+
+		taskList := model.TaskList(tasks)
+		tasks, resp = th.Client.GetTasksIncludeDeleted(2, 2, taskList.Etag())
+		CheckEtag(t, tasks, resp)
+	})
+
+	t.Run("get tasks, page=0, perPage=10, only orphaned", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+
+		tasks, resp := th.Client.GetTasksOrphaned(0, 10, "")
+		CheckOKStatus(t, resp)
+		require.Equal(t, []*model.Task{orphanedTask}, tasks)
+
+		taskList := model.TaskList(tasks)
+		tasks, resp = th.Client.GetTasksOrphaned(0, 10, taskList.Etag())
+		CheckEtag(t, tasks, resp)
+	})
+
+	t.Run("get tasks without permission", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_MANAGE_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_MANAGE_OTHERS_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+
+		_, resp := th.Client.GetTasks(0, 10, "")
+		CheckErrorMessage(t, resp, "api.context.permissions.app_error")
+	})
+}
+
+func TestDisableTask(t *testing.T) {
+	t.Run("disable non-existent task", func(t *testing.T) {
+		th := Setup().InitBasic()
+		defer th.TearDown()
+
+		_, resp := th.Client.DisableTask(model.NewId())
+		CheckNotFoundStatus(t, resp)
+	})
+
+	t.Run("disable task without permission", func(t *testing.T) {
+		th := Setup().InitBasic()
+		defer th.TearDown()
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateConfig(func(cfg *model.Config) {
+			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+		})
+
+		task := &model.Task{
+			Username:    GenerateTestUsername(),
+			Description: "task",
+		}
+
+		createdTask, resp := th.Client.CreateTask(task)
+		CheckCreatedStatus(t, resp)
+		defer th.App.PermanentDeleteTask(createdTask.UserId)
+
+		_, resp = th.Client.DisableTask(createdTask.UserId)
+		CheckErrorMessage(t, resp, "store.sql_task.get.missing.app_error")
+	})
+
+	t.Run("disable task without permission, but with read permission", func(t *testing.T) {
+		th := Setup().InitBasic()
+		defer th.TearDown()
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateConfig(func(cfg *model.Config) {
+			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+		})
+
+		task := &model.Task{
+			Username:    GenerateTestUsername(),
+			Description: "task",
+		}
+
+		createdTask, resp := th.Client.CreateTask(task)
+		CheckCreatedStatus(t, resp)
+		defer th.App.PermanentDeleteTask(createdTask.UserId)
+
+		_, resp = th.Client.DisableTask(createdTask.UserId)
+		CheckErrorMessage(t, resp, "api.context.permissions.app_error")
+	})
+
+	t.Run("disable task with permission", func(t *testing.T) {
+		th := Setup().InitBasic()
+		defer th.TearDown()
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_MANAGE_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateConfig(func(cfg *model.Config) {
+			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+		})
+
+		task, resp := th.Client.CreateTask(&model.Task{
+			Username:    GenerateTestUsername(),
+			Description: "task",
+		})
+		CheckCreatedStatus(t, resp)
+		defer th.App.PermanentDeleteTask(task.UserId)
+
+		enabledTask1, resp := th.Client.DisableTask(task.UserId)
+		CheckOKStatus(t, resp)
+		task.UpdateAt = enabledTask1.UpdateAt
+		task.DeleteAt = enabledTask1.DeleteAt
+		require.Equal(t, task, enabledTask1)
+
+		// Check task disabled
+		disab, resp := th.SystemAdminClient.GetTaskIncludeDeleted(task.UserId, "")
+		CheckOKStatus(t, resp)
+		require.NotZero(t, disab.DeleteAt)
+
+		// Disabling should be idempotent.
+		enabledTask2, resp := th.Client.DisableTask(task.UserId)
+		CheckOKStatus(t, resp)
+		require.Equal(t, task, enabledTask2)
+	})
+}
+func TestEnableTask(t *testing.T) {
+	t.Run("enable non-existent task", func(t *testing.T) {
+		th := Setup().InitBasic()
+		defer th.TearDown()
+
+		_, resp := th.Client.EnableTask(model.NewId())
+		CheckNotFoundStatus(t, resp)
+	})
+
+	t.Run("enable task without permission", func(t *testing.T) {
+		th := Setup().InitBasic()
+		defer th.TearDown()
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateConfig(func(cfg *model.Config) {
+			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+		})
+
+		task := &model.Task{
+			Username:    GenerateTestUsername(),
+			Description: "task",
+		}
+
+		createdTask, resp := th.Client.CreateTask(task)
+		CheckCreatedStatus(t, resp)
+		defer th.App.PermanentDeleteTask(createdTask.UserId)
+
+		_, resp = th.SystemAdminClient.DisableTask(createdTask.UserId)
+		CheckOKStatus(t, resp)
+
+		_, resp = th.Client.EnableTask(createdTask.UserId)
+		CheckErrorMessage(t, resp, "store.sql_task.get.missing.app_error")
+	})
+
+	t.Run("enable task without permission, but with read permission", func(t *testing.T) {
+		th := Setup().InitBasic()
+		defer th.TearDown()
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateConfig(func(cfg *model.Config) {
+			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+		})
+
+		task := &model.Task{
+			Username:    GenerateTestUsername(),
+			Description: "task",
+		}
+
+		createdTask, resp := th.Client.CreateTask(task)
+		CheckCreatedStatus(t, resp)
+		defer th.App.PermanentDeleteTask(createdTask.UserId)
+
+		_, resp = th.SystemAdminClient.DisableTask(createdTask.UserId)
+		CheckOKStatus(t, resp)
+
+		_, resp = th.Client.EnableTask(createdTask.UserId)
+		CheckErrorMessage(t, resp, "api.context.permissions.app_error")
+	})
+
+	t.Run("enable task with permission", func(t *testing.T) {
+		th := Setup().InitBasic()
+		defer th.TearDown()
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.TEAM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_MANAGE_TASKS.Id, model.TEAM_USER_ROLE_ID)
+		th.App.UpdateUserRoles(th.BasicUser.Id, model.TEAM_USER_ROLE_ID, false)
+		th.App.UpdateConfig(func(cfg *model.Config) {
+			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+		})
+
+		task, resp := th.Client.CreateTask(&model.Task{
+			Username:    GenerateTestUsername(),
+			Description: "task",
+		})
+		CheckCreatedStatus(t, resp)
+		defer th.App.PermanentDeleteTask(task.UserId)
+
+		_, resp = th.SystemAdminClient.DisableTask(task.UserId)
+		CheckOKStatus(t, resp)
+
+		enabledTask1, resp := th.Client.EnableTask(task.UserId)
+		CheckOKStatus(t, resp)
+		task.UpdateAt = enabledTask1.UpdateAt
+		task.DeleteAt = enabledTask1.DeleteAt
+		require.Equal(t, task, enabledTask1)
+
+		// Check task enabled
+		enab, resp := th.SystemAdminClient.GetTaskIncludeDeleted(task.UserId, "")
+		CheckOKStatus(t, resp)
+		require.Zero(t, enab.DeleteAt)
+
+		// Disabling should be idempotent.
+		enabledTask2, resp := th.Client.EnableTask(task.UserId)
+		CheckOKStatus(t, resp)
+		require.Equal(t, task, enabledTask2)
+	})
+}
+
+func TestAssignTask(t *testing.T) {
+	th := Setup().InitBasic()
+	defer th.TearDown()
+
+	t.Run("claim non-existent task", func(t *testing.T) {
+		_, resp := th.SystemAdminClient.AssignTask(model.NewId(), model.NewId())
+		CheckNotFoundStatus(t, resp)
+	})
+
+	t.Run("system admin assign task", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.SYSTEM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.SYSTEM_USER_ROLE_ID)
+		th.App.UpdateConfig(func(cfg *model.Config) {
+			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+		})
+
+		task := &model.Task{
+			Username:    GenerateTestUsername(),
+			Description: "task",
+		}
+		task, resp := th.Client.CreateTask(task)
+		CheckCreatedStatus(t, resp)
+		defer th.App.PermanentDeleteTask(task.UserId)
+
+		before, resp := th.Client.GetTask(task.UserId, "")
+		CheckOKStatus(t, resp)
+		require.Equal(t, th.BasicUser.Id, before.OwnerId)
+
+		_, resp = th.SystemAdminClient.AssignTask(task.UserId, th.SystemAdminUser.Id)
+		CheckOKStatus(t, resp)
+
+		// Original owner doesn't have read others tasks permission, therefore can't see task anymore
+		_, resp = th.Client.GetTask(task.UserId, "")
+		CheckNotFoundStatus(t, resp)
+
+		// System admin can see creator ID has changed
+		after, resp := th.SystemAdminClient.GetTask(task.UserId, "")
+		CheckOKStatus(t, resp)
+		require.Equal(t, th.SystemAdminUser.Id, after.OwnerId)
+
+		// Assign back to user without permissions to manage
+		_, resp = th.SystemAdminClient.AssignTask(task.UserId, th.BasicUser.Id)
+		CheckOKStatus(t, resp)
+
+		after, resp = th.SystemAdminClient.GetTask(task.UserId, "")
+		CheckOKStatus(t, resp)
+		require.Equal(t, th.BasicUser.Id, after.OwnerId)
+	})
+
+	t.Run("random user assign task", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.SYSTEM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.SYSTEM_USER_ROLE_ID)
+		th.App.UpdateConfig(func(cfg *model.Config) {
+			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+		})
+
+		task := &model.Task{
+			Username:    GenerateTestUsername(),
+			Description: "task",
+		}
+		createdTask, resp := th.Client.CreateTask(task)
+		CheckCreatedStatus(t, resp)
+		defer th.App.PermanentDeleteTask(createdTask.UserId)
+
+		th.LoginBasic2()
+
+		// Without permission to read others tasks it doesn't exist
+		_, resp = th.Client.AssignTask(createdTask.UserId, th.BasicUser2.Id)
+		CheckErrorMessage(t, resp, "store.sql_task.get.missing.app_error")
+
+		// With permissions to read we don't have permissions to modify
+		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_TASKS.Id, model.SYSTEM_USER_ROLE_ID)
+		_, resp = th.Client.AssignTask(createdTask.UserId, th.BasicUser2.Id)
+		CheckErrorMessage(t, resp, "api.context.permissions.app_error")
+
+		th.LoginBasic()
+	})
+
+	t.Run("delegated user assign task", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.SYSTEM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.SYSTEM_USER_ROLE_ID)
+		th.App.UpdateConfig(func(cfg *model.Config) {
+			*cfg.ServiceSettings.EnableTaskAccountCreation = true
+		})
+
+		task := &model.Task{
+			Username:    GenerateTestUsername(),
+			Description: "task",
+		}
+		task, resp := th.Client.CreateTask(task)
+		CheckCreatedStatus(t, resp)
+		defer th.App.PermanentDeleteTask(task.UserId)
+
+		// Simulate custom role by just changing the system user role
+		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.SYSTEM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.SYSTEM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_TASKS.Id, model.SYSTEM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_MANAGE_TASKS.Id, model.SYSTEM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_MANAGE_OTHERS_TASKS.Id, model.SYSTEM_USER_ROLE_ID)
+		th.LoginBasic2()
+
+		_, resp = th.Client.AssignTask(task.UserId, th.BasicUser2.Id)
+		CheckOKStatus(t, resp)
+
+		after, resp := th.SystemAdminClient.GetTask(task.UserId, "")
+		CheckOKStatus(t, resp)
+		require.Equal(t, th.BasicUser2.Id, after.OwnerId)
+	})
+
+	t.Run("task assigned to task fails", func(t *testing.T) {
+		defer th.RestoreDefaultRolePermissions(th.SaveDefaultRolePermissions())
+
+		th.AddPermissionToRole(model.PERMISSION_CREATE_TASK.Id, model.SYSTEM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_TASKS.Id, model.SYSTEM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_READ_OTHERS_TASKS.Id, model.SYSTEM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_MANAGE_TASKS.Id, model.SYSTEM_USER_ROLE_ID)
+		th.AddPermissionToRole(model.PERMISSION_MANAGE_OTHERS_TASKS.Id, model.SYSTEM_USER_ROLE_ID)
+
+		task := &model.Task{
+			Username:    GenerateTestUsername(),
+			Description: "task",
+		}
+		task, resp := th.Client.CreateTask(task)
+		CheckCreatedStatus(t, resp)
+		defer th.App.PermanentDeleteTask(task.UserId)
+
+		task2, resp := th.Client.CreateTask(&model.Task{
+			Username:    GenerateTestUsername(),
+			DisplayName: "a task",
+			Description: "task",
+		})
+
+		CheckCreatedStatus(t, resp)
+		defer th.App.PermanentDeleteTask(task2.UserId)
+
+		_, resp = th.Client.AssignTask(task.UserId, task2.UserId)
+		CheckErrorMessage(t, resp, "api.context.permissions.app_error")
+
+	})
+}
+
+func sToP(s string) *string {
+	return &s
+}

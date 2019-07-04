@@ -27,6 +27,9 @@ type Routes struct {
 	Bots *mux.Router // 'api/v4/bots'
 	Bot  *mux.Router // 'api/v4/bots/{bot_user_id:[A-Za-z0-9]+}'
 
+	Tasks *mux.Router // 'api/v4/tasks'
+	Task  *mux.Router // 'api/v4/taks/{task_id:[A-Za-z0-9]+}'
+
 	Teams              *mux.Router // 'api/v4/teams'
 	TeamsForUser       *mux.Router // 'api/v4/users/{user_id:[A-Za-z0-9]+}/teams'
 	Team               *mux.Router // 'api/v4/teams/{team_id:[A-Za-z0-9]+}'
@@ -138,6 +141,9 @@ func Init(configservice configservice.ConfigService, globalOptionsFunc app.AppOp
 	api.BaseRoutes.Bots = api.BaseRoutes.ApiRoot.PathPrefix("/bots").Subrouter()
 	api.BaseRoutes.Bot = api.BaseRoutes.ApiRoot.PathPrefix("/bots/{bot_user_id:[A-Za-z0-9]+}").Subrouter()
 
+	api.BaseRoutes.Tasks = api.BaseRoutes.ApiRoot.PathPrefix("/tasks").Subrouter()
+	api.BaseRoutes.Task = api.BaseRoutes.ApiRoot.PathPrefix("/tasks/{task_id:[A-Za-z0-9]+}").Subrouter()
+
 	api.BaseRoutes.Teams = api.BaseRoutes.ApiRoot.PathPrefix("/teams").Subrouter()
 	api.BaseRoutes.TeamsForUser = api.BaseRoutes.User.PathPrefix("/teams").Subrouter()
 	api.BaseRoutes.Team = api.BaseRoutes.Teams.PathPrefix("/{team_id:[A-Za-z0-9]+}").Subrouter()
@@ -216,6 +222,7 @@ func Init(configservice configservice.ConfigService, globalOptionsFunc app.AppOp
 
 	api.InitUser()
 	api.InitBot()
+	api.InitTask()
 	api.InitTeam()
 	api.InitChannel()
 	api.InitPost()

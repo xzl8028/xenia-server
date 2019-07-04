@@ -584,3 +584,15 @@ func (c *Context) RequireBotUserId() *Context {
 	}
 	return c
 }
+
+func (c *Context) RequireTaskId() *Context {
+	if c.Err != nil {
+		return c
+	}
+
+	if len(c.Params.TaskId) == 0 {
+		c.SetInvalidUrlParam("task_id")
+	}
+
+	return c
+}

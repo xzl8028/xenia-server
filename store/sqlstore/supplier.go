@@ -73,6 +73,7 @@ type SqlSupplierOldStores struct {
 	post                 store.PostStore
 	user                 store.UserStore
 	bot                  store.BotStore
+	task                 store.TaskStore
 	audit                store.AuditStore
 	cluster              store.ClusterDiscoveryStore
 	compliance           store.ComplianceStore
@@ -129,6 +130,7 @@ func NewSqlSupplier(settings model.SqlSettings, metrics einterfaces.MetricsInter
 	supplier.oldStores.post = NewSqlPostStore(supplier, metrics)
 	supplier.oldStores.user = NewSqlUserStore(supplier, metrics)
 	supplier.oldStores.bot = NewSqlBotStore(supplier, metrics)
+	supplier.oldStores.task = NewSqlTaskStore(supplier, metrics)
 	supplier.oldStores.audit = NewSqlAuditStore(supplier)
 	supplier.oldStores.cluster = NewSqlClusterDiscoveryStore(supplier)
 	supplier.oldStores.compliance = NewSqlComplianceStore(supplier)
@@ -176,6 +178,7 @@ func NewSqlSupplier(settings model.SqlSettings, metrics einterfaces.MetricsInter
 	supplier.oldStores.post.(*SqlPostStore).CreateIndexesIfNotExists()
 	supplier.oldStores.user.(*SqlUserStore).CreateIndexesIfNotExists()
 	supplier.oldStores.bot.(*SqlBotStore).CreateIndexesIfNotExists()
+	// supplier.oldStores.task.(*SqlTaskStore).CreateIndexesIfNotExists()
 	supplier.oldStores.audit.(*SqlAuditStore).CreateIndexesIfNotExists()
 	supplier.oldStores.compliance.(*SqlComplianceStore).CreateIndexesIfNotExists()
 	supplier.oldStores.session.(*SqlSessionStore).CreateIndexesIfNotExists()
@@ -948,6 +951,10 @@ func (ss *SqlSupplier) User() store.UserStore {
 
 func (ss *SqlSupplier) Bot() store.BotStore {
 	return ss.oldStores.bot
+}
+
+func (ss *SqlSupplier) Task() store.TaskStore {
+	return ss.oldStores.task
 }
 
 func (ss *SqlSupplier) Session() store.SessionStore {

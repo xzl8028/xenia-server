@@ -44,6 +44,22 @@ func (_m *Store) Bot() store.BotStore {
 	return r0
 }
 
+// Task provides a mock function with given fields:
+func (_m *Store) Task() store.TaskStore {
+	ret := _m.Called()
+
+	var r0 store.TaskStore
+	if rf, ok := ret.Get(0).(func() store.TaskStore); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(store.TaskStore)
+		}
+	}
+
+	return r0
+}
+
 // Channel provides a mock function with given fields:
 func (_m *Store) Channel() store.ChannelStore {
 	ret := _m.Called()

@@ -74,6 +74,7 @@ type SqlStore interface {
 	Post() store.PostStore
 	User() store.UserStore
 	Bot() store.BotStore
+	Task() store.TaskStore
 	Audit() store.AuditStore
 	ClusterDiscovery() store.ClusterDiscoveryStore
 	Compliance() store.ComplianceStore
