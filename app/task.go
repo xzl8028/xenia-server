@@ -89,11 +89,11 @@ import (
 // 	return result.Data.(*model.Task), nil
 // }
 
+// GetTask returns the given task.
 func (a *App) GetTask(taskId string) (*model.Task, *model.AppError) {
 	return a.Srv.Store.Task().Get(taskId)
 }
 
-// GetTasks returns the requested page of tasks.
 // func (a *App) GetTasks() (model.TaskList, *model.AppError) {
 // 	result := <-a.Srv.Store.Task().GetAll()
 // 	if result.Err != nil {
@@ -103,6 +103,7 @@ func (a *App) GetTask(taskId string) (*model.Task, *model.AppError) {
 // 	return result.Data.([]*model.Task), nil
 // }
 
+// GetTasks returns the requested page of tasks.
 func (a *App) GetTasks() (model.TaskList, *model.AppError) {
 	return a.Srv.Store.Task().GetAll()
 }
@@ -180,6 +181,10 @@ func (a *App) GetTasks() (model.TaskList, *model.AppError) {
 // 	return task, nil
 // }
 
+func (a *App) UpdateTask(task *model.Task) (*model.Task, *model.AppError) {
+	return a.Srv.Store.Task().Update(task);
+}
+
 // func (a *App) InsertTask(task *model.Task) (*model.Task, *model.AppError) {
 // 	if result := <-a.Srv.Store.Task().Insert(task); result.Err != nil {
 // 		return nil, result.Err
@@ -187,6 +192,10 @@ func (a *App) GetTasks() (model.TaskList, *model.AppError) {
 
 // 	return task, nil
 // }
+
+func (a *App) InsertTask(task *model.Task) (*model.Task, *model.AppError) {
+	return a.Srv.Store.Task().Insert(task);
+}
 
 // // disableUserTasks disables all tasks owned by the given user
 // func (a *App) disableUserTasks(userId string) *model.AppError {

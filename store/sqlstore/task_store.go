@@ -107,11 +107,20 @@ func (us SqlTaskStore) Get(taskId string) (*model.Task, *model.AppError) {
 		WHERE TaskId =`+taskId
 
 	var task *model.Task
-	if err := us.GetReplica().SelectOne(&task, query, map[string]interface{}{"task_id": taskId}); err == sql.ErrNoRows {
+	if err := us.GetReplica().SelectOne(&task, query); err == sql.ErrNoRows {
 		return nil, model.MakeTaskNotFoundError(taskId)
 	} else if err != nil {
 		return nil, model.NewAppError("SqlTaskStore.Get", "store.sql_task.get.app_error", map[string]interface{}{"task_id": taskId}, err.Error(), http.StatusInternalServerError)
 	}
+
+	// var task *model.Task
+	// if err := us.GetReplica().SelectOne(&task, sql); /*err == sql.ErrNoRows {
+	// 		result.Err = model.MakeTaskNotFoundError(taskId)
+	// } else if*/ err != nil {
+	// 		result.Err = model.NewAppError("SqlTaskStore.GetTask", "store.sql_task.get.app_error", $
+	// } //else {
+	// 		result.Data = task
+	// // }
 
 	return task, nil
 }
