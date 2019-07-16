@@ -23,12 +23,12 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"path"
-	"strings"
+	//"path"
+	//"strings"
 
 	"github.com/xzl8028/xenia-server/model"
 	"github.com/xzl8028/xenia-server/store"
-	"github.com/xzl8028/xenia-server/utils"
+	//"github.com/xzl8028/xenia-server/utils"
 )
 
 func (a *App) DoPostAction(postId, actionId, userId, selectedOption string) (string, *model.AppError) {
@@ -218,7 +218,7 @@ func (a *App) DoActionRequest(rawURL string, body []byte) (*http.Response, *mode
 	var httpClient *http.Client
 	url, _ := url.Parse(rawURL)
 	siteURL, _ := url.Parse(*a.Config().ServiceSettings.SiteURL)
-	subpath, _ := utils.GetSubpathFromConfig(a.Config())
+	//subpath, _ := utils.GetSubpathFromConfig(a.Config())
 	if (url.Hostname() == "localhost" || url.Hostname() == "127.0.0.1" || url.Hostname() == siteURL.Hostname()) /*&& strings.HasPrefix(url.Path, path.Join(subpath, "plugins"))*/ {
 		req.Header.Set(model.HEADER_AUTH, "Bearer "+a.Session.Token)
 		httpClient = a.HTTPService.MakeClient(true)
