@@ -15,7 +15,6 @@ web/static/js/bundle*.js.map
 web/static/js/libs*.js
 
 config/active.dat
-config/config.json
 /plugins
 
 # Enteprise imports file
