@@ -9,7 +9,6 @@ npm-debug.log
 webapp/yarn-error.log
 xenia.xenia-license
 config/xenia.xenia-license
-config/config.json
 
 web/static/js/bundle*.js
 web/static/js/bundle*.js.map
