@@ -516,7 +516,7 @@ func insertTaskWithPost(c *Context, w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(c.App.Session.TeamMembers[0],"0 here!!!")
 	fmt.Println(len(c.App.Session.TeamMembers),"length!!!")
-	fmt.Println(c.App.Session.TeamMembers[1],"1 here!!!")
+	//fmt.Println(c.App.Session.TeamMembers[1],"1 here!!!")
 
 	new_task = insertHelper(new_task,r)
 
