@@ -600,6 +600,11 @@ func (a *App) PatchPost(postId string, patch *model.PostPatch) (*model.Post, *mo
 	return updatedPost, nil
 }
 
+func (a *App) SelectByMessage(message string) (*model.Post, *model.AppError) {
+	return a.Srv.Store.Post().SelectByMessage(message)
+}
+
+
 func (a *App) GetPostsPage(channelId string, page int, perPage int) (*model.PostList, *model.AppError) {
 	return a.Srv.Store.Post().GetPosts(channelId, page*perPage, perPage, true)
 }

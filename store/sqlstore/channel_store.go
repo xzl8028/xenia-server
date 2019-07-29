@@ -1258,6 +1258,30 @@ func (s SqlChannelStore) getByName(teamId string, name string, includeDeleted bo
 	return &channel, nil
 }
 
+
+func (s SqlChannelStore) GetByDisplayName(teamId string, displayName string) (*model.Channel, *model.AppError) {
+	var query string
+
+	query = "SELECT * FROM Channels WHERE TeamId = :TeamId AND DisplayName = :DisplayName"
+
+	channel := model.Channel{}
+
+
+
+	if err := s.GetReplica().SelectOne(&channel, query, map[string]interface{}{"TeamId": teamId, "DisplayName": displayName}); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, model.NewAppError("SqlChannelStore.GetByName", store.MISSING_CHANNEL_ERROR, nil, "teamId="+teamId+", "+"displayName="+displayName+", "+err.Error(), http.StatusNotFound)
+		}
+		return nil, model.NewAppError("SqlChannelStore.GetByName", "store.sql_channel.get_by_name.existing.app_error", nil, "teamId="+teamId+", "+"displayName="+displayName+", "+err.Error(), http.StatusInternalServerError)
+	}
+
+	return &channel, nil
+}
+
+
+
+
+
 func (s SqlChannelStore) GetDeletedByName(teamId string, name string) (*model.Channel, *model.AppError) {
 	channel := model.Channel{}
 
