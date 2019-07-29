@@ -28,6 +28,8 @@ type task struct {
 	TaskType    string 		`json:"task_type"`
 	Note        string 		`json:"note"`
 	Status      int  		`json:"status"`
+	TeamId      string      `json:"teamid"`
+	PostId      string      `json:"postid"`
 }
 
 func taskFromModel(t *model.Task) *task {
@@ -43,6 +45,9 @@ func taskFromModel(t *model.Task) *task {
 		TaskType:    t.TaskType,
 		Note:        t.Note,
 		Status:      t.Status,
+		TeamId:      t.TeamId,
+		PostId:      t.PostId,
+
 	}
 }
 
@@ -62,7 +67,7 @@ func NewSqlTaskStore(sqlStore SqlStore, metrics einterfaces.MetricsInterface) st
 	}
 
 	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(task{}, "Tasks").SetKeys(false, "TaskId")
+		table := db.AddTableWithName(task{}, "Tasks").SetKeys(true, "TaskId")
 		table.ColMap("TaskId").SetMaxSize(200)
 		table.ColMap("CreateAt").SetMaxSize(200)
 		table.ColMap("DueAt").SetMaxSize(200)
@@ -74,6 +79,8 @@ func NewSqlTaskStore(sqlStore SqlStore, metrics einterfaces.MetricsInterface) st
 		table.ColMap("TaskType").SetMaxSize(200)
 		table.ColMap("Note").SetMaxSize(200)
 		table.ColMap("Status").SetMaxSize(200)
+		table.ColMap("TeamId").SetMaxSize(200)
+		table.ColMap("PostId").SetMaxSize(200)
 	}
 
 	return us
@@ -215,7 +222,7 @@ func (us SqlTaskStore) Update(task *model.Task) (*model.Task, *model.AppError) {
 	// 	return nil, model.NewAppError("SqlTaskStore.Update", "store.sql_task.update.app_error", traceTask(task, map[string]interface{}{"count": count}), "", http.StatusInternalServerError)
 	// }
 
-	if _, err := us.GetMaster().Exec("UPDATE Tasks SET CreateAt = :CreateAt, DueAt = :DueAt, ConfirmAt = :ConfirmAt, FinishAt = :FinishAt, SendDept = :SendDept, ReceiveDept = :ReceiveDept, RoomId = :RoomId, TaskType = :TaskType, Note = :Note, Status = :Status WHERE TaskId = :TaskId", map[string]interface{}{"TaskId": task.TaskId, "CreateAt": task.CreateAt, "DueAt": task.DueAt, "ConfirmAt": task.ConfirmAt, "FinishAt": task.FinishAt, "SendDept": task.SendDept, "ReceiveDept": task.ReceiveDept, "RoomId": task.RoomId, "TaskType": task.TaskType, "Note": task.Note, "Status": task.Status}); err != nil {
+	if _, err := us.GetMaster().Exec("UPDATE Tasks SET CreateAt = :CreateAt, DueAt = :DueAt, ConfirmAt = :ConfirmAt, FinishAt = :FinishAt, SendDept = :SendDept, ReceiveDept = :ReceiveDept, RoomId = :RoomId, TaskType = :TaskType, Note = :Note, Status = :Status, TeamId = :TeamId, PostId = :PostId WHERE TaskId = :TaskId", map[string]interface{}{"TaskId": task.TaskId, "CreateAt": task.CreateAt, "DueAt": task.DueAt, "ConfirmAt": task.ConfirmAt, "FinishAt": task.FinishAt, "SendDept": task.SendDept, "ReceiveDept": task.ReceiveDept, "RoomId": task.RoomId, "TaskType": task.TaskType, "Note": task.Note, "Status": task.Status, "TeamId": task.TeamId, "PostId": task.PostId}); err != nil {
 		return nil, model.NewAppError("SqlTaskStore.Update", "store.sql_task.update.app_error", nil, "task_id="+strconv.Itoa(task.TaskId), http.StatusInternalServerError)
 	}
 
@@ -223,12 +230,23 @@ func (us SqlTaskStore) Update(task *model.Task) (*model.Task, *model.AppError) {
 }
 
 func (us SqlTaskStore) Insert(task *model.Task) (*model.Task, *model.AppError) {
-	if _, err := us.GetMaster().Exec("INSERT INTO Tasks (CreateAt, DueAt, ConfirmAt, FinishAt, SendDept, ReceiveDept, RoomId, TaskType, Note, Status) VALUES (:CreateAt, :DueAt, :ConfirmAt, :FinishAt, :SendDept, :ReceiveDept, :RoomId, :TaskType, :Note, :Status)", map[string]interface{}{"CreateAt": task.CreateAt, "DueAt": task.DueAt, "ConfirmAt": task.ConfirmAt, "FinishAt": task.FinishAt, "SendDept": task.SendDept, "ReceiveDept": task.ReceiveDept, "RoomId": task.RoomId, "TaskType": task.TaskType, "Note": task.Note, "Status": task.Status}); err != nil {
+
+	if res, err := us.GetMaster().Exec("INSERT INTO Tasks (CreateAt, DueAt, ConfirmAt, FinishAt, SendDept, ReceiveDept, RoomId, TaskType, Note, Status,TeamId,PostId) VALUES (:CreateAt, :DueAt, :ConfirmAt, :FinishAt, :SendDept, :ReceiveDept, :RoomId, :TaskType, :Note, :Status, :TeamId, :PostId);", map[string]interface{}{"CreateAt": task.CreateAt, "DueAt": task.DueAt, "ConfirmAt": task.ConfirmAt, "FinishAt": task.FinishAt, "SendDept": task.SendDept, "ReceiveDept": task.ReceiveDept, "RoomId": task.RoomId, "TaskType": task.TaskType, "Note": task.Note, "Status": task.Status,"TeamId": task.TeamId, "PostId": task.PostId}); err != nil {
 		return nil, model.NewAppError("SqlTaskStore.Insert", "store.sql_task.insert.app_error", nil, "", http.StatusInternalServerError)
+	} else {
+		id, err := res.LastInsertId()
+		if err != nil {
+			println("Error!")
+		} else {
+			println("LastInsertId:", id)
+			task.TaskId = int(id)
+		}
 	}
 
 	return task, nil
 }
+
+
 
 // // PermanentDelete removes the task from the database altogether.
 // // If the corresponding user is to be deleted, it must be done via the user store.

@@ -535,6 +535,35 @@ func (_m *PostStore) GetSingle(id string) (*model.Post, *model.AppError) {
 	return r0, r1
 }
 
+
+func (_m *PostStore) SelectByMessage(message string) (*model.Post, *model.AppError) {
+	ret := _m.Called(message)
+
+	var r0 *model.Post
+	if rf, ok := ret.Get(0).(func(string) *model.Post); ok {
+		r0 = rf(message)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*model.Post)
+		}
+	}
+
+	var r1 *model.AppError
+	if rf, ok := ret.Get(1).(func(string) *model.AppError); ok {
+		r1 = rf(message)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(*model.AppError)
+		}
+	}
+
+	return r0, r1
+}
+
+
+
+
+
 // InvalidateLastPostTimeCache provides a mock function with given fields: channelId
 func (_m *PostStore) InvalidateLastPostTimeCache(channelId string) {
 	_m.Called(channelId)

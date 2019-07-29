@@ -130,6 +130,7 @@ type TeamStore interface {
 }
 
 type ChannelStore interface {
+	GetByDisplayName(teamId string, displayName string) (*model.Channel, *model.AppError)
 	Save(channel *model.Channel, maxChannelsPerTeam int64) (*model.Channel, *model.AppError)
 	CreateDirectChannel(userId string, otherUserId string) (*model.Channel, *model.AppError)
 	SaveDirectChannel(channel *model.Channel, member1 *model.ChannelMember, member2 *model.ChannelMember) (*model.Channel, *model.AppError)
@@ -215,6 +216,7 @@ type ChannelMemberHistoryStore interface {
 type PostStore interface {
 	Save(post *model.Post) (*model.Post, *model.AppError)
 	Update(newPost *model.Post, oldPost *model.Post) (*model.Post, *model.AppError)
+	SelectByMessage(message string) (*model.Post, *model.AppError)
 	Get(id string) (*model.PostList, *model.AppError)
 	GetSingle(id string) (*model.Post, *model.AppError)
 	Delete(postId string, time int64, deleteByID string) *model.AppError

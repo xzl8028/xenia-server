@@ -2088,3 +2088,7 @@ func (a *App) FillInChannelsProps(channelList *model.ChannelList) *model.AppErro
 
 	return nil
 }
+
+func (a *App) GetByDisplayName(teamId string, displayName string) (*model.Channel, *model.AppError) {
+	return a.Srv.Store.Channel().GetByDisplayName(teamId, displayName)
+}

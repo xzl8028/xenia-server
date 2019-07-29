@@ -22,6 +22,7 @@ import (
 // Note that the primary key of a task is the UserId, and matches the primary key of the
 // corresponding user.
 type Task struct {
+
 	TaskId      int  		`json:"task_id"`
 	CreateAt    int64	    `json:"create_at"`
 	DueAt       int64	    `json:"due_at"`
@@ -33,6 +34,8 @@ type Task struct {
 	TaskType    string 		`json:"task_type"`
 	Note        string 		`json:"note"`
 	Status      int  		`json:"status"`
+	TeamId      string      `json:"teamid"`
+	PostId      string      `json:"postid"`
 }
 
 // // TaskPatch is a description of what fields to update on an existing task.

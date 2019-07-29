@@ -314,6 +314,17 @@ func (s *SqlPostStore) GetSingle(id string) (*model.Post, *model.AppError) {
 	return &post, nil
 }
 
+
+func (s *SqlPostStore) SelectByMessage(message string) (*model.Post, *model.AppError) {
+	var post model.Post
+	err := s.GetReplica().SelectOne(&post, "SELECT * FROM Posts WHERE Message = :Message AND DeleteAt = 0", map[string]interface{}{"Message":message})
+	if err != nil {
+		return nil, model.NewAppError("SqlPostStore.GetSingle", "store.sql_post.get.app_error", nil, "message="+message+err.Error(), http.StatusNotFound)
+	}
+	return &post, nil
+}
+
+
 type etagPosts struct {
 	Id       string
 	UpdateAt int64
