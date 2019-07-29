@@ -1,6 +1,6 @@
 {
     "ServiceSettings": {
-        "SiteURL": "",
+        "SiteURL": "http://35.241.119.236:8065",
         "WebsocketURL": "",
         "LicenseFileLocation": "",
         "ListenAddress": ":8065",
@@ -89,7 +89,7 @@
     },
     "TeamSettings": {
         "SiteName": "Xenia",
-        "MaxUsersPerTeam": 50,
+        "MaxUsersPerTeam": 1000,
         "EnableTeamCreation": true,
         "EnableUserCreation": true,
         "EnableOpenServer": true,
@@ -97,8 +97,8 @@
         "RestrictCreationToDomains": "",
         "EnableCustomBrand": false,
         "CustomBrandText": "",
-        "CustomDescriptionText": "",
-        "RestrictDirectMessage": "any",
+        "CustomDescriptionText": "专为酒店定制的团队沟通协作AI平台",
+        "RestrictDirectMessage": "team",
         "RestrictTeamInvite": "all",
         "RestrictPublicChannelManagement": "all",
         "RestrictPrivateChannelManagement": "all",
@@ -440,6 +440,12 @@
         "ClientDirectory": "./client/plugins",
         "Plugins": {},
         "PluginStates": {
+            "bigbluebutton": {
+                "Enable": true
+            },
+            "com.xenia.demo-plugin": {
+                "Enable": true
+            },
             "com.xenia.nps": {
                 "Enable": true
             }
