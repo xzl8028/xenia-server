@@ -93,7 +93,7 @@ func createPostWithReturn(c *Context, w http.ResponseWriter, r *http.Request)(re
 
 	//post.UserId = c.App.Session.UserId
 	//新的服务器创建一个新的bot后，需修改此处bot id
-	post.UserId = "u8pi16iqy7d93cw5mtf5ui6xta"
+	post.UserId = "7qjnptbrx3baunn7xcbtg7us1e"
 
 	hasPermission := false
 	if c.App.SessionHasPermissionToChannel(c.App.Session, post.ChannelId, model.PERMISSION_CREATE_POST) {
