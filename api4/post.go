@@ -160,18 +160,18 @@ func updatePostWithReturn(c *Context, w http.ResponseWriter, r *http.Request)(re
 	//	return""
 	//}
 	//
-	originalPost, err := c.App.GetSinglePost(c.Params.PostId)
+	//originalPost, err := c.App.GetSinglePost(c.Params.PostId)
 	//if err != nil {
 	//	c.SetPermissionError(model.PERMISSION_EDIT_POST)
 	//	return""
 	//}
 
-	if c.App.Session.UserId != originalPost.UserId {
-		if !c.App.SessionHasPermissionToChannelByPost(c.App.Session, c.Params.PostId, model.PERMISSION_EDIT_OTHERS_POSTS) {
-			c.SetPermissionError(model.PERMISSION_EDIT_OTHERS_POSTS)
-			return""
-		}
-	}
+	//if c.App.Session.UserId != originalPost.UserId {
+	//	if !c.App.SessionHasPermissionToChannelByPost(c.App.Session, c.Params.PostId, model.PERMISSION_EDIT_OTHERS_POSTS) {
+	//		c.SetPermissionError(model.PERMISSION_EDIT_OTHERS_POSTS)
+	//		return""
+	//	}
+	//}
 
 	post.Id = c.Params.PostId
 
