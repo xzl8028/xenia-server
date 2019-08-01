@@ -80,39 +80,39 @@ func createPost(c *Context, w http.ResponseWriter, r *http.Request) {
 }
 
 func createPostWithReturn(c *Context, w http.ResponseWriter, r *http.Request)(res string) {
-	fmt.Println("!!!!!inside！！！create post with return")
-	fmt.Println("!!!!!inside！！！Header is: ", r.Header)
-	fmt.Println("!!!!!inside！！！c.botuserid is: ", c.Params.BotUserId, "c.userid: ", c.Params.UserId)
+	//fmt.Println("!!!!!inside！！！create post with return")
+	//fmt.Println("!!!!!inside！！！Header is: ", r.Header)
+	//fmt.Println("!!!!!inside！！！c.botuserid is: ", c.Params.BotUserId, "c.userid: ", c.Params.UserId)
+	//
+	//
+	//post := model.PostFromJson(r.Body)
+	//if post == nil {
+	//	c.SetInvalidParam("post")
+	//	return
+	//}
 
-
-	post := model.PostFromJson(r.Body)
-	if post == nil {
-		c.SetInvalidParam("post")
-		return
-	}
-
-	//post.UserId = c.App.Session.UserId
+	post.UserId = c.App.Session.UserId
 	//新的服务器创建一个新的bot后，需修改此处bot id
-	post.UserId = "7qjnptbrx3baunn7xcbtg7us1e"
+	//post.UserId = "7qjnptbrx3baunn7xcbtg7us1e"
 
-	hasPermission := false
-	if c.App.SessionHasPermissionToChannel(c.App.Session, post.ChannelId, model.PERMISSION_CREATE_POST) {
-		hasPermission = true
-	} else if channel, err := c.App.GetChannel(post.ChannelId); err == nil {
-		// Temporary permission check method until advanced permissions, please do not copy
-		if channel.Type == model.CHANNEL_OPEN && c.App.SessionHasPermissionToTeam(c.App.Session, channel.TeamId, model.PERMISSION_CREATE_POST_PUBLIC) {
-			hasPermission = true
-		}
-	}
-
-	if !hasPermission {
-		c.SetPermissionError(model.PERMISSION_CREATE_POST)
-		return
-	}
-
-	if post.CreateAt != 0 && !c.App.SessionHasPermissionTo(c.App.Session, model.PERMISSION_MANAGE_SYSTEM) {
-		post.CreateAt = 0
-	}
+	//hasPermission := false
+	//if c.App.SessionHasPermissionToChannel(c.App.Session, post.ChannelId, model.PERMISSION_CREATE_POST) {
+	//	hasPermission = true
+	//} else if channel, err := c.App.GetChannel(post.ChannelId); err == nil {
+	//	// Temporary permission check method until advanced permissions, please do not copy
+	//	if channel.Type == model.CHANNEL_OPEN && c.App.SessionHasPermissionToTeam(c.App.Session, channel.TeamId, model.PERMISSION_CREATE_POST_PUBLIC) {
+	//		hasPermission = true
+	//	}
+	//}
+	//
+	//if !hasPermission {
+	//	c.SetPermissionError(model.PERMISSION_CREATE_POST)
+	//	return
+	//}
+	//
+	//if post.CreateAt != 0 && !c.App.SessionHasPermissionTo(c.App.Session, model.PERMISSION_MANAGE_SYSTEM) {
+	//	post.CreateAt = 0
+	//}
 
 	rp, err := c.App.CreatePostAsUser(c.App.PostWithProxyRemovedFromImageURLs(post), c.App.Session.Id)
 	if err != nil {
@@ -141,30 +141,30 @@ func updatePostWithReturn(c *Context, w http.ResponseWriter, r *http.Request)(re
 
 	post := model.PostFromJson(r.Body)
 
-	if post == nil {
-		c.SetInvalidParam("post")
-		return""
-	}
-
-	// The post being updated in the payload must be the same one as indicated in the URL.
-	if post.Id != c.Params.PostId {
-		c.SetInvalidParam("id")
-		return""
-	}
-
-	// Updating the file_ids of a post is not a supported operation and will be ignored
-	post.FileIds = nil
-
-	if !c.App.SessionHasPermissionToChannelByPost(c.App.Session, c.Params.PostId, model.PERMISSION_EDIT_POST) {
-		c.SetPermissionError(model.PERMISSION_EDIT_POST)
-		return""
-	}
-
-	originalPost, err := c.App.GetSinglePost(c.Params.PostId)
-	if err != nil {
-		c.SetPermissionError(model.PERMISSION_EDIT_POST)
-		return""
-	}
+	//if post == nil {
+	//	c.SetInvalidParam("post")
+	//	return""
+	//}
+	//
+	//// The post being updated in the payload must be the same one as indicated in the URL.
+	//if post.Id != c.Params.PostId {
+	//	c.SetInvalidParam("id")
+	//	return""
+	//}
+	//
+	//// Updating the file_ids of a post is not a supported operation and will be ignored
+	//post.FileIds = nil
+	//
+	//if !c.App.SessionHasPermissionToChannelByPost(c.App.Session, c.Params.PostId, model.PERMISSION_EDIT_POST) {
+	//	c.SetPermissionError(model.PERMISSION_EDIT_POST)
+	//	return""
+	//}
+	//
+	//originalPost, err := c.App.GetSinglePost(c.Params.PostId)
+	//if err != nil {
+	//	c.SetPermissionError(model.PERMISSION_EDIT_POST)
+	//	return""
+	//}
 
 	if c.App.Session.UserId != originalPost.UserId {
 		if !c.App.SessionHasPermissionToChannelByPost(c.App.Session, c.Params.PostId, model.PERMISSION_EDIT_OTHERS_POSTS) {
