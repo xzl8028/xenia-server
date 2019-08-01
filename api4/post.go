@@ -85,7 +85,7 @@ func createPostWithReturn(c *Context, w http.ResponseWriter, r *http.Request)(re
 	//fmt.Println("!!!!!inside！！！c.botuserid is: ", c.Params.BotUserId, "c.userid: ", c.Params.UserId)
 	//
 	//
-	//post := model.PostFromJson(r.Body)
+	post := model.PostFromJson(r.Body)
 	//if post == nil {
 	//	c.SetInvalidParam("post")
 	//	return
@@ -160,7 +160,7 @@ func updatePostWithReturn(c *Context, w http.ResponseWriter, r *http.Request)(re
 	//	return""
 	//}
 	//
-	//originalPost, err := c.App.GetSinglePost(c.Params.PostId)
+	originalPost, err := c.App.GetSinglePost(c.Params.PostId)
 	//if err != nil {
 	//	c.SetPermissionError(model.PERMISSION_EDIT_POST)
 	//	return""
