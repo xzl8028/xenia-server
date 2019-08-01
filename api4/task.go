@@ -481,7 +481,8 @@ func updateTaskStatusQuickWithPost(c *Context, w http.ResponseWriter, r *http.Re
 		attachment_self := []attachment{attachment_obj}
 
 		//props struct
-		props_self := props{Attachments: attachment_self }
+		props_self := props{From_webhook:"true", Override_icon_url: "http://s575.com/Uploads/2018-10-31/20170pwu61540976213.png", Override_username: "灵奇任务助手", Webhook_display_name: "task_center", Attachments: attachment_self }
+
 
 		//payload struct
 		payload_self := payload2{Id: old_task.PostId, Is_pinned:false,Message: "任务"+strconv.Itoa(new_task.TaskId),File_ids:[]string{},Has_reactions:false, Props: props_self }
@@ -514,7 +515,7 @@ func updateTaskStatusQuickWithPost(c *Context, w http.ResponseWriter, r *http.Re
 		attachment_self := []attachment{attachment_obj}
 
 		//props struct
-		props_self := props{ Attachments: attachment_self }
+		props_self := props{From_webhook:"true", Override_icon_url: "http://s575.com/Uploads/2018-10-31/20170pwu61540976213.png", Override_username: "灵奇任务助手", Webhook_display_name: "task_center", Attachments: attachment_self }
 
 		//payload struct
 		payload_self := payload2{Id: old_task.PostId, Is_pinned:false,Message: "任务"+strconv.Itoa(new_task.TaskId),File_ids:[]string{},Has_reactions:false, Props: props_self }
