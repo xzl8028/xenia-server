@@ -325,6 +325,7 @@ type TaskStore interface {
 	Update(task *model.Task) (*model.Task, *model.AppError)
 	Insert(task *model.Task) (*model.Task, *model.AppError)
 	// PermanentDelete(taskId string) *model.AppError
+	GetAllWithTeamId(teamId string) ([]*model.Task, *model.AppError)
 }
 
 type SessionStore interface {

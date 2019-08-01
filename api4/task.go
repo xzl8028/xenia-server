@@ -81,6 +81,7 @@ func  (api  *API)  InitTask()  {
 	//  api.BaseRoutes.Task.Handle("",  api.ApiSessionRequired(patchTask)).Methods("PUT")
 	api.BaseRoutes.Task.Handle("",  api.ApiSessionRequired(getTask)).Methods("GET")
 	api.BaseRoutes.Tasks.Handle("",  api.ApiSessionRequired(getTasks)).Methods("GET")
+	api.BaseRoutes.Tasks.Handle("/withteam",  api.ApiSessionRequired(getTasksWithTeam)).Methods("GET")
 	api.BaseRoutes.Task.Handle("/insert",  api.ApiSessionRequired(insertTask)).Methods("POST")
 	api.BaseRoutes.Task.Handle("/",  api.ApiSessionRequired(insertTask)).Methods("POST")
 	api.BaseRoutes.Task.Handle("/insertpost",  api.ApiSessionRequired(insertTaskWithPost)).Methods("POST")
@@ -226,6 +227,45 @@ func getTasks(c *Context, w http.ResponseWriter, r *http.Request) {
 
 	w.Write(tasks.ToJson())
 }
+
+
+func getTasksWithTeam(c *Context, w http.ResponseWriter, r *http.Request) {
+	// includeDeleted := r.URL.Query().Get("include_deleted") == "true"
+	// onlyOrphaned := r.URL.Query().Get("only_orphaned") == "true"
+
+	// var OwnerId string
+	// if c.App.SessionHasPermissionTo(c.App.Session, model.PERMISSION_READ_OTHERS_TASKS) {
+	// 	// Get tasks created by any user.
+	// 	OwnerId = ""
+	// } else if c.App.SessionHasPermissionTo(c.App.Session, model.PERMISSION_READ_TASKS) {
+	// 	// Only get tasks created by this user.
+	// 	OwnerId = c.App.Session.UserId
+	// } else {
+	// 	c.SetPermissionError(model.PERMISSION_READ_TASKS)
+	// 	return
+	// }
+
+	teams,errteam := c.App.GetTeamMembersForUser(c.App.Session.UserId)
+	if(errteam!=nil){
+		return;
+	}
+
+
+	tasks, err := c.App.GetAllWithTeamId(teams[0].TeamId)
+	if err != nil {
+		c.Err = err
+		return
+	}
+
+
+	// if c.HandleEtag(tasks.Etag(), "Get Tasks", w, r) {
+	// 	return
+	// }
+
+	w.Write(tasks.ToJson())
+}
+
+
 
 // func disableTask(c *Context, w http.ResponseWriter, r *http.Request) {
 // 	updateTaskActive(c, w, r, false)
@@ -377,7 +417,7 @@ func updateTaskStatusQuickWithPost(c *Context, w http.ResponseWriter, r *http.Re
 		attachment_self := []attachment{attachment_obj}
 
 		//props struct
-		props_self := props{From_webhook:"true", Override_icon_url: "http://s575.com/Uploads/2018-10-31/20170pwu61540976213.png", Override_username: "灵奇任务助手", Webhook_display_name: "task_center", Attachments: attachment_self }
+		props_self := props{Attachments: attachment_self }
 
 		//payload struct
 		payload_self := payload2{Id: old_task.PostId, Is_pinned:false,Message: "任务"+strconv.Itoa(new_task.TaskId),File_ids:[]string{},Has_reactions:false, Props: props_self }
@@ -409,7 +449,7 @@ func updateTaskStatusQuickWithPost(c *Context, w http.ResponseWriter, r *http.Re
 		attachment_self := []attachment{attachment_obj}
 
 		//props struct
-		props_self := props{From_webhook:"true", Override_icon_url: "http://s575.com/Uploads/2018-10-31/20170pwu61540976213.png", Override_username: "灵奇任务助手", Webhook_display_name: "task_center", Attachments: attachment_self }
+		props_self := props{Attachments: attachment_self }
 
 		//payload struct
 		payload_self := payload2{Id: old_task.PostId, Is_pinned:false,Message: "任务"+strconv.Itoa(new_task.TaskId),File_ids:[]string{},Has_reactions:false, Props: props_self }
@@ -439,7 +479,7 @@ func updateTaskStatusQuickWithPost(c *Context, w http.ResponseWriter, r *http.Re
 		attachment_self := []attachment{attachment_obj}
 
 		//props struct
-		props_self := props{From_webhook:"true", Override_icon_url: "http://s575.com/Uploads/2018-10-31/20170pwu61540976213.png", Override_username: "灵奇任务助手", Webhook_display_name: "task_center", Attachments: attachment_self }
+		props_self := props{Attachments: attachment_self }
 
 		//payload struct
 		payload_self := payload2{Id: old_task.PostId, Is_pinned:false,Message: "任务"+strconv.Itoa(new_task.TaskId),File_ids:[]string{},Has_reactions:false, Props: props_self }
@@ -472,7 +512,7 @@ func updateTaskStatusQuickWithPost(c *Context, w http.ResponseWriter, r *http.Re
 		attachment_self := []attachment{attachment_obj}
 
 		//props struct
-		props_self := props{From_webhook:"true", Override_icon_url: "http://s575.com/Uploads/2018-10-31/20170pwu61540976213.png", Override_username: "灵奇任务助手", Webhook_display_name: "task_center", Attachments: attachment_self }
+		props_self := props{ Attachments: attachment_self }
 
 		//payload struct
 		payload_self := payload2{Id: old_task.PostId, Is_pinned:false,Message: "任务"+strconv.Itoa(new_task.TaskId),File_ids:[]string{},Has_reactions:false, Props: props_self }
@@ -511,6 +551,7 @@ func updateTaskStatusQuickWithPost(c *Context, w http.ResponseWriter, r *http.Re
 
 
 func insertTaskWithPost(c *Context, w http.ResponseWriter, r *http.Request) {
+	fmt.Println("!!!!!HERE!!!!")
 	// new_task := model.TaskFromJson(r.Body)
 	var new_task model.Task
 
@@ -569,7 +610,8 @@ func insertTaskWithPost(c *Context, w http.ResponseWriter, r *http.Request) {
 	attachment_self := []attachment{attachment_obj}
 
 	//props struct
-	props_self := props{From_webhook:"true", Override_icon_url: "http://s575.com/Uploads/2018-10-31/20170pwu61540976213.png", Override_username: "灵奇任务助手", Webhook_display_name: "task_center", Attachments: attachment_self }
+	//props_self := props{From_webhook:"true", Override_icon_url: "http://s575.com/Uploads/2018-10-31/20170pwu61540976213.png", Override_username: "灵奇任务助手", Webhook_display_name: "task_center", Attachments: attachment_self }
+	props_self := props{Attachments: attachment_self }
 
 	//payload struct
 	payload_self := payload{Channel_id: channel.Id, Message: "任务"+strconv.Itoa(task.TaskId), Root_id: "", Props: props_self }
@@ -588,9 +630,10 @@ func insertTaskWithPost(c *Context, w http.ResponseWriter, r *http.Request) {
 		c.SetInvalidParam("post")
 		return
 	}
-
+	fmt.Println("!!!!insert task with post")
 	var r2 http.Request
 	r2.Body =  ioutil.NopCloser(bytes.NewReader(jsonData))
+
 	res := createPostWithReturn(c,w,&r2)
 	task.PostId = res
 	task.TeamId = teams[0].TeamId

@@ -85,7 +85,7 @@
         "EnableEmailInvitations": false,
         "ExperimentalLdapGroupSync": false,
         "DisableBotsWhenOwnerIsDeactivated": true,
-        "EnableBotAccountCreation": false
+        "EnableBotAccountCreation": true
     },
     "TeamSettings": {
         "SiteName": "Xenia",

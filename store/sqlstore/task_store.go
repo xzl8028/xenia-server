@@ -172,6 +172,49 @@ func (us SqlTaskStore) GetAll() ([]*model.Task, *model.AppError) {
 	return tasks, nil
 }
 
+
+//For task center plugin
+func (us SqlTaskStore) GetAllWithTeamId(teamId string) ([]*model.Task, *model.AppError) {
+
+	// params := map[string]interface{}{
+	//  "offset": options.Page * options.PerPage,
+	//  "limit":  options.PerPage,
+	// }
+
+	// var conditions []string
+	// var conditionsSql string
+	// var additionalJoin string
+
+	// if !options.IncludeDeleted {
+	//  conditions = append(conditions, "b.DeleteAt = 0")
+	// }
+	// if options.OwnerId != "" {
+	//  conditions = append(conditions, "b.OwnerId = :creator_id")
+	//  params["creator_id"] = options.OwnerId
+	// }
+	// if options.OnlyOrphaned {
+	//  additionalJoin = "JOIN Users o ON (o.Id = b.OwnerId)"
+	//  conditions = append(conditions, "o.DeleteAt != 0")
+	// }
+
+	// if len(conditions) > 0 {
+	//  conditionsSql = "WHERE " + strings.Join(conditions, " AND ")
+	// }
+
+	query := `
+  SELECT * FROM Tasks WHERE TeamId = :TeamId
+ `
+
+	var tasks []*model.Task
+	if _, err := us.GetReplica().Select(&tasks, query,map[string]interface{}{"TeamId":teamId}); err != nil {
+		return nil, model.NewAppError("SqlTaskStore.GetAll", "store.sql_task.get_all.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return tasks, nil
+}
+
+
+
 // // Save persists a new task to the database.
 // // It assumes the corresponding user was saved via the user store.
 // func (us SqlTaskStore) Save(task *model.Task) (*model.Task, *model.AppError) {

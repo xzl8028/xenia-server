@@ -235,3 +235,7 @@ func (a *App) InsertTask(task *model.Task) (*model.Task, *model.AppError) {
 // func (a *App) ConvertUserToTask(user *model.User) (*model.Task, *model.AppError) {
 // 	return a.Srv.Store.Task().Save(model.TaskFromUser(user))
 // }
+
+func (a *App) GetAllWithTeamId(teamId string) (model.TaskList, *model.AppError) {
+	return a.Srv.Store.Task().GetAllWithTeamId(teamId)
+}
