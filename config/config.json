@@ -206,7 +206,7 @@
         "ConnectionSecurity": "",
         "SendPushNotifications": true,
         "PushNotificationServer": "https://push-test.xenia.com",
-        "PushNotificationContents": "generic",
+        "PushNotificationContents": "full",
         "EnableEmailBatching": false,
         "EmailBatchingBufferSize": 256,
         "EmailBatchingInterval": 30,
